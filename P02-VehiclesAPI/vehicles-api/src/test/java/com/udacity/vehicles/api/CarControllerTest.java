@@ -65,9 +65,9 @@ public class CarControllerTest {
         given(carService.save(any())).willReturn(resultCar);
         Car car = getCar();
         mvc.perform(post(new URI("/cars"))
-                                .content(json.write(car).getJson())
-                                .contentType(MediaType.APPLICATION_JSON_UTF8)
-                                .accept(MediaType.APPLICATION_JSON_UTF8))
+                        .content(json.write(car).getJson())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
                 .andExpect(status().isCreated());
     }
 
@@ -96,9 +96,29 @@ public class CarControllerTest {
         Car car = getCar();
         car.setId(1L);
         given(carService.findById(any())).willReturn(car);
-        mvc.perform(get(new URI("/cars/" + String.valueOf(car.getId()))))
+        mvc.perform(get(new URI("/cars/" + car.getId())))
                 .andExpect(status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.id").value(car.getId()));
+    }
+
+    /**
+     * Tests for successful update a car in the system
+     *
+     * @throws Exception when car update fails in the system
+     */
+    @Test
+    public void updateCar() throws Exception {
+        Car carBeforeUpdate = getDifferenceCar();
+        carBeforeUpdate.setId(1L);
+        Car resultCar = getCar();
+        resultCar.setId(1L);
+        given(carService.save(any())).willReturn(resultCar);
+        mvc.perform(put(new URI("/cars/" + carBeforeUpdate.getId()))
+                        .content(json.write(carBeforeUpdate).getJson())
+                        .contentType(MediaType.APPLICATION_JSON_UTF8)
+                        .accept(MediaType.APPLICATION_JSON_UTF8))
+                .andExpect(status().isOk())
+                .andExpect(MockMvcResultMatchers.content().json(json.write(resultCar).getJson()));
     }
 
     /**
@@ -111,7 +131,7 @@ public class CarControllerTest {
         Car car = getCar();
         car.setId(1L);
         given(carService.findById(any())).willReturn(car);
-        mvc.perform(delete(new URI("/cars/" + String.valueOf(car.getId()))))
+        mvc.perform(delete(new URI("/cars/" + car.getId())))
                 .andExpect(status().isNoContent());
     }
 
@@ -137,6 +157,26 @@ public class CarControllerTest {
         details.setNumberOfDoors(4);
         car.setDetails(details);
         car.setCondition(Condition.USED);
+        return car;
+    }
+
+    private Car getDifferenceCar() {
+        Car car = new Car();
+        car.setLocation(new Location(80.730610, -40.935242));
+        Details details = new Details();
+        Manufacturer manufacturer = new Manufacturer(102, "Vinfast");
+        details.setManufacturer(manufacturer);
+        details.setModel("VF8");
+        details.setMileage(32280);
+        details.setExternalColor("Black");
+        details.setBody("SUV");
+        details.setEngine("3.6L V6");
+        details.setFuelType("Electric");
+        details.setModelYear(2020);
+        details.setProductionYear(2020);
+        details.setNumberOfDoors(4);
+        car.setDetails(details);
+        car.setCondition(Condition.NEW);
         return car;
     }
 }
